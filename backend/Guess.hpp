@@ -22,6 +22,10 @@ class Guess
 		Guess(const std::string& word, const std::string& goal)
 			throw (std::length_error);
 
+		Guess(const Guess& instance);
+
+		~Guess();
+
 		const std::string&	get_word() const;	//	Return the guessed word.
 
 		bool	is_valid(size_t pos) const			//	Returns true if the letter at pos position in word is the same than the letter in goal at the same position.
@@ -35,9 +39,7 @@ class Guess
 		std::vector<bool>						_misplaced;
 
 		Guess();
-		Guess(const Guess& instance);
 		Guess&	operator=(const Guess& rhs);
-		~Guess();
 };
 
 #endif

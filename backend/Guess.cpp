@@ -6,7 +6,7 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 16:25:11 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/14 17:07:45 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/14 19:13:12 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ Guess::Guess(const std::string& word, const std::string& goal) throw (std::lengt
 	, _misplaced(_word.size())
 {
 	if (word.size() != goal.size())
-		throw std::length_error("Guess::Guess (word and goal sizes must be the same)");
+		throw std::length_error("Guess::Guess(const std::string& word, const std::string& goal) word and goal sizes must be the same.");
 
 	std::vector<char>	unfound_chars;
 
@@ -46,6 +46,12 @@ Guess::Guess(const std::string& word, const std::string& goal) throw (std::lengt
 
 }
 
+Guess::Guess(const Guess& instance)
+	: _word(instance._word)
+	, _goal(instance._goal)
+	, _misplaced(instance._misplaced)
+{}
+
 const std::string&	Guess::get_word() const
 {
 	return _word;
@@ -53,14 +59,14 @@ const std::string&	Guess::get_word() const
 
 bool	Guess::is_valid(size_t pos) const throw (std::range_error)
 {
-	if (pos < 0 || pos >= _word.size())
+	if (pos >= _word.size())
 		throw std::range_error("Guess::is_valid(int pos) pos is outside the string.");
 	return (_word[pos] == _goal[pos]);
 }
 
 bool	Guess::is_misplaced(size_t pos) const throw (std::range_error)
 {
-	if (pos < 0 || pos >= _word.size())
+	if (pos >= _word.size())
 		throw std::range_error("Guess::is_valid(int pos) pos is outside the string.");
 	return (_misplaced[pos]);
 }

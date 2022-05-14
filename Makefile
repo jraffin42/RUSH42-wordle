@@ -4,7 +4,7 @@ CXXFLAGS = -Wall -Wextra $(shell $(SDL2_CONFIG) --cflags)
 LDLIBS =   $(shell $(SDL2_CONFIG) --static-libs)
 
 NAME = wordle
-SRC =  wordle.cpp
+SRC =  wordle.cpp backend/Game.cpp backend/Guess.cpp
 OBJ =  $(SRC:.cpp=.o)
 
 DIR := $(shell pwd)

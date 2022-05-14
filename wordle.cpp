@@ -4,6 +4,10 @@
 #include "SDL_ttf.h"
 
 #define FONT_PATH "font/Timeless.ttf"
+#define GRID_WIDTH 5
+#define GRID_HEIGHT 6
+#define DEFAULT_WINDOW_WIDTH 640
+#define DEFAULT_WINDOW_HEIGHT 480
 
 void print_event_type(Uint32 event);
 
@@ -12,6 +16,17 @@ static SDL_Renderer *renderer = NULL;
 static TTF_Font *font = NULL;
 static SDL_Surface *letter_surfaces[26] = {};
 static SDL_Texture *letter_textures[26] = {};
+static SDL_Rect tile[GRID_HEIGHT][GRID_WIDTH] = {};
+static int width = DEFAULT_WINDOW_WIDTH;
+static int height = DEFAULT_WINDOW_HEIGHT;
+static int tile_width;
+static int tile_height;
+static int board_width;
+static int board_height;
+static int xmargin = 10;
+static int ymargin = 10;
+static int xspacing = 10;
+static int yspacing = 10;
 
 static void cleanup() {
 	if (font != NULL)
@@ -49,22 +64,40 @@ static void safeatexit_(const char *file, int line, void (*func)(void)) {
 
 static void render() {
 	int ret;
+	SDL_Rect dst = {};
 
-	ret = SDL_SetRenderDrawColor(renderer, 0x22, 0x22, 0x22, 0xff);
+	ret = SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, 0xff);
 	if (ret < 0) sdlfail();
 	ret = SDL_RenderClear(renderer);
 	if (ret < 0) sdlfail();
-	for (int y = 0; y < 5; y++) {
-		for (int x = 0; x < 5; x++) {
-			;
+	ret = SDL_SetRenderDrawColor(renderer, 0x33, 0x33, 0x33, 0xff);
+	for (int y = 0; y < GRID_HEIGHT; y++) {
+		for (int x = 0; x < GRID_WIDTH; x++) {
+			SDL_RenderDrawRect(renderer, &tile[y][x]);
 		}
 	}
 	SDL_Texture *tex = letter_textures[0];
-	int w, h;
-	if (SDL_QueryTexture(tex, NULL, NULL, &w, &h) < 0) sdlfail();
-	SDL_Rect dst = {0, 0, w, h};
+	if (SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h) < 0) sdlfail();
 	SDL_RenderCopy(renderer, letter_textures[0], NULL, &dst);
 	SDL_RenderPresent(renderer);
+}
+
+static void update_tiles_dimensions() {
+	SDL_GetWindowSize(window, &width, &height);
+	width = event.window.data1;
+	height = event.window.data2;
+	board_width = width - xmargin * 2;
+	board_height = height - ymargin * 2;
+	tile_width = board_width / GRID_WIDTH * 9 / 10;
+	tile_height = (height - ymargin * 2) / GRID_HEIGHT * 9 / 10;
+	for (int y = 0; y < GRID_HEIGHT; y++) {
+		for (int x = 0; x < GRID_WIDTH; x++) {
+			tile[y][x].x = xmargin + (board_width * (x * 2 + 1) / GRID_WIDTH - tile_width) / 2;
+			tile[y][x].y = ymargin + (board_height * (y * 2 + 1) / GRID_HEIGHT - tile_height) / 2;
+			tile[y][x].w = tile_width;
+			tile[y][x].h = tile_height;
+		}
+	}
 }
 
 int main() {
@@ -109,6 +142,8 @@ int main() {
 			switch (event.window.event) {
 			// Where we render things
 			case SDL_WINDOWEVENT_EXPOSED: render(); break;
+			case SDL_WINDOWEVENT_RESIZED:
+				break;
 			default: print_event_type(event.type);
 			}
 			break;

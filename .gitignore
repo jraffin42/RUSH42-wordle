@@ -5,4 +5,5 @@ wordle
 local/
 .vscode/
 */build/
-SDL2-*
+SDL2-*/
+SDL2_ttf-*/

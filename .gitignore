@@ -1,0 +1,7 @@
+wordle
+*.o
+*.swp
+*~
+local/
+.vscode/
+*/build/

@@ -24,13 +24,13 @@
 
 class Game
 {
-	class GameNotRunningException : public std::exception { virtual const char* what(); };
-	class GameRunningException : public std::exception { virtual const char* what(); };
-	class FileImportFailedException : public std::exception { virtual const char* what(); };
-	class EmptyDictionaryException : public std::exception { virtual const char* what(); };
-	class InvalidWordException : public std::exception { virtual const char* what(); };
-
 	public:
+		class GameNotRunningException : public std::exception { public: virtual const char* what() const throw(); };
+		class GameRunningException : public std::exception { public: virtual const char* what() const throw(); };
+		class FileImportFailedException : public std::exception { public: virtual const char* what() const throw(); };
+		class EmptyDictionaryException : public std::exception { public: virtual const char* what() const throw(); };
+		class InvalidWordException : public std::exception { public: virtual const char* what() const throw(); };
+
 		static const size_t	default_word_length = 5;
 		static const size_t	default_max_guesses = 5;
 
@@ -47,7 +47,7 @@ class Game
 								throw (GameRunningException, FileImportFailedException);
 
 		void				stop_game();	//	Clears game state.
-		void				new_game()		//	Clears game state and starts a new game.
+		void				start_game()	//	Clears game state and starts a new game.
 								throw (EmptyDictionaryException);
 
 		bool				is_running();	//	Is the game running ?
@@ -66,18 +66,23 @@ class Game
 		const Guess&		get_guess(size_t pos)	//	Returns a reference to the guess object at (zero based) pos position ( pos must be < guesses() ).
 								throw (std::range_error);
 
-		static std::string	get_random_word_from_dictionary(const std::unordered_set<std::string>& dictionary)
+		std::string			get_random_word()
 								throw (EmptyDictionaryException);
 
 	private:
-		const size_t						_word_length;
-		const size_t						_max_guesses;
-		bool								_started;
-		bool								_won;
-		std::random_device					_rand;
-		std::string							_goal;
-		std::vector<Guess>					_guesses;
-		std::unordered_set<std::string>		_dictionary;
+		const size_t							_word_length;
+		const size_t							_max_guesses;
+		bool									_started;
+		bool									_won;
+		std::string								_goal;
+		std::vector<Guess>						_guesses;
+		std::unordered_set<std::string>			_dictionary;
+		std::vector<const std::string*>			_randVector;
+		std::random_device 						_randdev;
+		std::mt19937_64							_randgen;
+		std::uniform_int_distribution<size_t>	_rand;
+
+		void	_add_word_to_dictionary_internal(const std::string& word);
 
 		Game(const Game& instance);
 		Game&	operator=(const Game& rhs);

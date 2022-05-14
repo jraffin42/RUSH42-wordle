@@ -6,13 +6,14 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 16:25:11 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/14 19:13:12 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/14 19:36:27 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdexcept>
 #include <algorithm>
 #include <vector>
+#include <string>
 
 #include "Guess.hpp"
 
@@ -50,6 +51,9 @@ Guess::Guess(const Guess& instance)
 	: _word(instance._word)
 	, _goal(instance._goal)
 	, _misplaced(instance._misplaced)
+{}
+
+Guess::~Guess()
 {}
 
 const std::string&	Guess::get_word() const

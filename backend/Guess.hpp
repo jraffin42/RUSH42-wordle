@@ -14,6 +14,7 @@
 #define GUESS_HPP
 
 #include <stdexcept>
+#include <vector>
 #include <string>
 
 class Guess

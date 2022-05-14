@@ -1,7 +1,7 @@
 CC =       clang++
 CXX =      clang++
 CXXFLAGS = -Wall -Wextra $(shell $(SDL2_CONFIG) --cflags)
-LDLIBS =   $(shell $(SDL2_CONFIG) --libs)
+LDLIBS =   $(shell $(SDL2_CONFIG) --static-libs)
 
 NAME = wordle
 SRC =  wordle.cpp

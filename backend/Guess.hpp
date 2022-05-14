@@ -19,11 +19,6 @@
 class Guess
 {
 	public:
-		Guess();
-		Guess(const Guess& instance);
-		~Guess();
-		Guess&	operator=(const Guess& rhs);
-
 		Guess(const std::string& word, const std::string& goal);
 
 		const std::string&	get_word() const;
@@ -35,6 +30,11 @@ class Guess
 	private:
 		std::string								_word;
 		const std::string&						_goal;
+
+		Guess();
+		Guess(const Guess& instance);
+		~Guess();
+		Guess&	operator=(const Guess& rhs);
 };
 
 #endif

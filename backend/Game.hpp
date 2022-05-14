@@ -27,9 +27,14 @@ class Game
 	public:
 		static const int	_max_guesses = 5;
 
-		Game();
+		Game(const std::string& dictionarypath)
+		{
+
+		};
 
 		void				import_new_dictionary(const std::string& filepath) throw (FileImportFailedException);
+
+		void
 
 		bool				is_word_valid(const std::string& word);
 

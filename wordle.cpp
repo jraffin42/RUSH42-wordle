@@ -1,16 +1,50 @@
 #include <iostream>
 #include <stdio.h>
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include "SDL.h"
+#include "SDL_ttf.h"
+
+#define FONT_PATH "font/Timeless.ttf"
+#define GRID_WIDTH 5
+#define GRID_HEIGHT 6
+#define DEFAULT_WINDOW_WIDTH 640
+#define DEFAULT_WINDOW_HEIGHT 480
 
 void print_event_type(Uint32 event);
 
+enum e_tile_color {
+	BLACK = 0,
+	GRAY,
+	YELLOW,
+	GREEN,
+};
+
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
+static TTF_Font *font = NULL;
+static SDL_Surface *letter_surfaces[26] = {};
+static SDL_Texture *letter_textures[26] = {};
+static SDL_Rect tile[GRID_HEIGHT][GRID_WIDTH] = {};
+static char tile_char[GRID_HEIGHT][GRID_WIDTH] = {};
+static e_tile_color tile_color[GRID_HEIGHT][GRID_WIDTH] = {};
+static int width = DEFAULT_WINDOW_WIDTH;
+static int height = DEFAULT_WINDOW_HEIGHT;
+static int tile_width;
+static int tile_height;
+static int board_width;
+static int board_height;
+static int xmargin = 10;
+static int ymargin = 10;
 
 static void cleanup() {
-	SDL_DestroyWindow(window);
+	if (font != NULL)
+		TTF_CloseFont(font);
 	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	// We assume the last allocated letter is only followed by unallocated ones
+	for (int i = 0; i < 26 && letter_surfaces[i] != NULL; i++)
+		SDL_FreeSurface(letter_surfaces[i]);
+	for (int i = 0; i < 26 && letter_textures[i] != NULL; i++)
+		SDL_DestroyTexture(letter_textures[i]);
 }
 
 static void quit(int status) {
@@ -35,6 +69,66 @@ static void safeatexit_(const char *file, int line, void (*func)(void)) {
 	}
 }
 
+static void render() {
+	int ret;
+	SDL_Rect dst = {};
+
+	ret = SDL_SetRenderDrawColor(renderer, 0x12, 0x12, 0x13, 0xff);
+	if (ret < 0) sdlfail();
+	ret = SDL_RenderClear(renderer);
+	if (ret < 0) sdlfail();
+	for (int y = 0; y < GRID_HEIGHT; y++) {
+		for (int x = 0; x < GRID_WIDTH; x++) {
+			dst = tile[y][x];
+			if (tile_color[y][x] == BLACK) {
+				ret = SDL_SetRenderDrawColor(renderer, 0x33, 0x33, 0x33, 0xff);
+				if (ret < 0) sdlfail();
+				SDL_RenderDrawRect(renderer, &dst);
+				dst.x += 1;
+				dst.y += 1;
+				dst.w -= 2;
+				dst.h -= 2;
+			}
+			ret = 0;
+			switch (tile_color[y][x]) {
+				case BLACK: ret = SDL_SetRenderDrawColor(renderer, 0x12, 0x12, 0x13, 0xff); break;
+				case GRAY:  ret = SDL_SetRenderDrawColor(renderer, 0x3a, 0x3a, 0x3c, 0xff); break;
+				case YELLOW:ret = SDL_SetRenderDrawColor(renderer, 0xb5, 0x9f, 0x3b, 0xff); break;
+				case GREEN: ret = SDL_SetRenderDrawColor(renderer, 0x53, 0x8d, 0x4e, 0xff); break;
+			}
+			if (ret < 0) sdlfail();
+			SDL_RenderFillRect(renderer, &dst);
+			if (tile_char[y][x] >= 'A' && tile_char[y][x] <= 'Z') {
+				;
+			} else {
+				SDL_Texture *tex = letter_textures[0];
+				if (SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h) < 0) sdlfail();
+				dst.x += (tile[y][x].w - dst.w) / 2;
+				dst.y += (tile[y][x].h - dst.h) / 2;
+				SDL_RenderCopy(renderer, letter_textures[0], NULL, &dst);
+			}
+		}
+	}
+	SDL_RenderPresent(renderer);
+}
+
+static void update_dimensions() {
+	SDL_GetWindowSize(window, &width, &height);
+	board_width = width - xmargin * 2;
+	board_height = height - ymargin * 2;
+	tile_width = board_width / GRID_WIDTH * 9 / 10;
+	tile_height = (height - ymargin * 2) / GRID_HEIGHT * 9 / 10;
+	for (int y = 0; y < GRID_HEIGHT; y++) {
+		for (int x = 0; x < GRID_WIDTH; x++) {
+			tile_color[y][x] = (e_tile_color)(x % 4); // TODO: Remove this test initialization
+			tile[y][x].x = xmargin + (board_width * (x * 2 + 1) / GRID_WIDTH - tile_width) / 2;
+			tile[y][x].y = ymargin + (board_height * (y * 2 + 1) / GRID_HEIGHT - tile_height) / 2;
+			tile[y][x].w = tile_width;
+			tile[y][x].h = tile_height;
+		}
+	}
+}
+
 int main() {
 	SDL_Event event;
 	int ret;
@@ -48,32 +142,44 @@ int main() {
 	window = SDL_CreateWindow("Wordle",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		640, 480,
-		SDL_WINDOW_RESIZABLE);
+		SDL_WINDOW_RESIZABLE|SDL_WINDOW_OPENGL);
 	if (window == NULL) sdlfail();
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if (renderer == NULL) sdlfail();
 
-	SDL_SetWindowMinimumSize(window, 640, 480);
+	font = TTF_OpenFont(FONT_PATH, 72); if (font == NULL) ttffail();
+	char str[2];
+	str[1] = '\0';
+	for (int i = 0; i < 26; i++) {
+		str[0] = 'A' + i;
+		letter_surfaces[i] = TTF_RenderText_Solid(
+				font, str,
+		        (SDL_Color){0xff, 0xff, 0xff, 0xff});
+		if (letter_surfaces[i] == NULL) ttffail();
+		letter_textures[i] = SDL_CreateTextureFromSurface(
+				renderer, letter_surfaces[i]);
+		if (letter_textures[i] == NULL) sdlfail();
+	}
 
+	SDL_SetWindowMinimumSize(window, 640, 480);
+	update_dimensions();
+
+	// Main Loop
 	while ((ret = SDL_WaitEvent(&event)) && event.type != SDL_QUIT) {
 		switch (event.type) {
 
 		case SDL_WINDOWEVENT:
 			switch (event.window.event) {
-			case SDL_WINDOWEVENT_EXPOSED:
-				ret = SDL_RenderClear(renderer);
-				if (ret < 0) sdlfail();
-				SDL_RenderPresent(renderer);
-				break;
+			// Where we render things
+			case SDL_WINDOWEVENT_EXPOSED: render(); break;
+			case SDL_WINDOWEVENT_RESIZED: update_dimensions(); break;
 			default: print_event_type(event.type);
 			}
 			break;
 		
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
-			case SDLK_ESCAPE:
-				exit(0);
-				break;
+			case SDLK_ESCAPE: exit(0); break;
 			default: break;
 			}
 
@@ -86,7 +192,7 @@ int main() {
 
 void print_event_type(Uint32 event) {
 	switch (event) {
-		case 0: printf("SDL_FIRSTEVENT\n"); 					break;
+		case 0:     printf("SDL_FIRSTEVENT\n"); 				break;
 		case 0x100: printf("SDL_QUIT\n"); 						break;
 		case 0x101: printf("SDL_APP_TERMINATING\n"); 			break;
 		case 0x102: printf("SDL_APP_LOWMEMORY\n"); 				break;

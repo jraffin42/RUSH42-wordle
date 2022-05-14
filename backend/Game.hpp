@@ -11,8 +11,11 @@
 /* ************************************************************************** */
 
 #include <exception>
+#include <stdexcept>
+#include <random>
 #include <unordered_set>
 #include <vector>
+#include <string>
 
 #include "Guess.hpp"
 
@@ -21,35 +24,61 @@
 
 class Game
 {
-	class GameEndedException : public std::exception { virtual const char* what(); };
+	class GameHasEndedException : public std::exception { virtual const char* what(); };
+	class GameRunningException : public std::exception { virtual const char* what(); };
 	class FileImportFailedException : public std::exception { virtual const char* what(); };
+	class InvalidWordException : public std::exception { virtual const char* what(); };
 
 	public:
-		static const int	_max_guesses = 5;
+		Game();																		//	Creates a new game object, not yet running with a word length of 5 and 5 maximum guesses.
+		Game(int word_length, int max_guesses);										//	Creates a new game object, not yet running.
+		Game(const std::string& dictionarypath)										//	Creates a new game object with a word length of 5 and 5 maximum guesses from a given dictionary file, then starts it.
+			throw (FileImportFailedException);
+		Game(int word_length, int max_guesses, const std::string& dictionarypath)	//	Creates a new game object from a given dictionary file, then starts it.
+			throw (FileImportFailedException);
 
-		Game(const std::string& dictionarypath)
-		{
+		void				clear_dictionary()										//	Clears the whole dictionary.
+								throw (GameRunningException);
+		void				add_word_to_dictionary(const std::string& word)			//	Adds a single word to the dictionary.
+								throw (GameRunningException, InvalidWordException);
+		void				import_dictionary_file(const std::string& filepath)		//	Imports a whitespace separated word list file into the dictionary.
+								throw (GameRunningException, FileImportFailedException);
 
-		};
+		void				stop_game();	//	Clears game state.
+		void				new_game();		//	Clears game state and starts a new game.
 
-		void				import_new_dictionary(const std::string& filepath) throw (FileImportFailedException);
+		bool				is_running();	//	Is the game running ?
+		bool				is_finished();	//	Is the game finished ?
+		bool				is_won();		//	Is the game won ?
+		int					guesses();		//	Number of valid guesses submitted so far.
 
-		void
+		int					word_length();	//	Get the game word length.
+		int					max_guesses();	//	Maximum Guesses before loosing the game.
 
-		bool				is_word_valid(const std::string& word);
+		bool				is_word_valid(const std::string& word);		//	Is this word part of the dictionary ?
+		const Guess&		guess_word(const std::string& word)			//	Takes a turn guessing a word.
+								throw (InvalidWordException, GameHasEndedException);
 
-		const Guess&		new_guess(const std::string& word) throw (GameEndedException);
+		const std::string&	get_goal();			//	Returns the word to find.
+		const Guess&		get_guess(int pos)	//	Returns a reference to the guess object at (zero based) pos position ( pos must be < guesses() ).
+								throw (std::range_error);
 
-		int					guesses();
-		int					guesses_left();
-
-		const Guess&		get_guess(int pos) throw (std::out_of_range);
+		static std::string					get_random_word_from_dictionary(const std::unordered_set<std::string>& dictionary);
 
 	private:
+		const int							_word_length;
+		const int							_max_guesses;
+		bool								_running;
+		bool								_won;
 		int									_turn;
+		std::random_device					_rand;
 		std::string							_goal;
 		std::vector<Guess>					_guesses;
 		std::unordered_set<std::string>		_dictionary;
+
+		Game(const Game& instance);
+		Game&	operator=(const Game& rhs);
+		~Game();
 };
 
 #endif

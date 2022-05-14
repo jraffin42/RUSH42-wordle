@@ -13,28 +13,29 @@
 #ifndef GUESS_HPP
 #define GUESS_HPP
 
+#include <stdexcept>
 #include <string>
-#include <unordered_set>
 
 class Guess
 {
 	public:
 		Guess(const std::string& word, const std::string& goal);
+			throw (std::length_error);
 
-		const std::string&	get_word() const;
+		const std::string&	get_word() const;	//	Return the guessed word.
 
-		bool	is_valid();
-		bool	is_valid_letter(int pos);
-		bool	is_letter_in_word(int pos);
+		bool	is_valid(int pos);		//	Returns true if the letter at pos position in word is the same than the letter in goal at the same position.
+		bool	is_misplaced(int pos);	//	Returns true if the letter at pos position in word can be found somewhere in goal (and if the same letter in goal has not already been flagged).
 
 	private:
-		std::string								_word;
+		const std::string						_word;
 		const std::string&						_goal;
+		std::vector<bool>						_flagged;
 
 		Guess();
 		Guess(const Guess& instance);
-		~Guess();
 		Guess&	operator=(const Guess& rhs);
+		~Guess();
 };
 
 #endif

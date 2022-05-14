@@ -53,6 +53,8 @@ int main() {
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if (renderer == NULL) sdlfail();
 
+	SDL_SetWindowMinimumSize(window, 640, 480);
+
 	while ((ret = SDL_WaitEvent(&event)) && event.type != SDL_QUIT) {
 		switch (event.type) {
 

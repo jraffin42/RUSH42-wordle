@@ -1,16 +1,28 @@
 #include <iostream>
 #include <stdio.h>
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include "SDL.h"
+#include "SDL_ttf.h"
+
+#define FONT_PATH "font/Timeless.ttf"
 
 void print_event_type(Uint32 event);
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
+static TTF_Font *font = NULL;
+static SDL_Surface *letter_surfaces[26] = {};
+static SDL_Texture *letter_textures[26] = {};
 
 static void cleanup() {
-	SDL_DestroyWindow(window);
+	if (font != NULL)
+		TTF_CloseFont(font);
 	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	// We assume the last allocated letter is only followed by unallocated ones
+	for (int i = 0; i < 26 && letter_surfaces[i] != NULL; i++)
+		SDL_FreeSurface(letter_surfaces[i]);
+	for (int i = 0; i < 26 && letter_textures[i] != NULL; i++)
+		SDL_DestroyTexture(letter_textures[i]);
 }
 
 static void quit(int status) {
@@ -35,6 +47,26 @@ static void safeatexit_(const char *file, int line, void (*func)(void)) {
 	}
 }
 
+static void render() {
+	int ret;
+
+	ret = SDL_SetRenderDrawColor(renderer, 0x22, 0x22, 0x22, 0xff);
+	if (ret < 0) sdlfail();
+	ret = SDL_RenderClear(renderer);
+	if (ret < 0) sdlfail();
+	for (int y = 0; y < 5; y++) {
+		for (int x = 0; x < 5; x++) {
+			;
+		}
+	}
+	SDL_Texture *tex = letter_textures[0];
+	int w, h;
+	if (SDL_QueryTexture(tex, NULL, NULL, &w, &h) < 0) sdlfail();
+	SDL_Rect dst = {0, 0, w, h};
+	SDL_RenderCopy(renderer, letter_textures[0], NULL, &dst);
+	SDL_RenderPresent(renderer);
+}
+
 int main() {
 	SDL_Event event;
 	int ret;
@@ -53,27 +85,37 @@ int main() {
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if (renderer == NULL) sdlfail();
 
+	font = TTF_OpenFont(FONT_PATH, 72); if (font == NULL) ttffail();
+	char str[2];
+	str[1] = '\0';
+	for (int i = 0; i < 26; i++) {
+		str[0] = 'A' + i;
+		letter_surfaces[i] = TTF_RenderText_Solid(
+				font, str,
+		        (SDL_Color){0xff, 0xff, 0xff, 0xff});
+		if (letter_surfaces[i] == NULL) ttffail();
+		letter_textures[i] = SDL_CreateTextureFromSurface(
+				renderer, letter_surfaces[i]);
+		if (letter_textures[i] == NULL) sdlfail();
+	}
+
 	SDL_SetWindowMinimumSize(window, 640, 480);
 
+	// Main Loop
 	while ((ret = SDL_WaitEvent(&event)) && event.type != SDL_QUIT) {
 		switch (event.type) {
 
 		case SDL_WINDOWEVENT:
 			switch (event.window.event) {
-			case SDL_WINDOWEVENT_EXPOSED:
-				ret = SDL_RenderClear(renderer);
-				if (ret < 0) sdlfail();
-				SDL_RenderPresent(renderer);
-				break;
+			// Where we render things
+			case SDL_WINDOWEVENT_EXPOSED: render(); break;
 			default: print_event_type(event.type);
 			}
 			break;
 		
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
-			case SDLK_ESCAPE:
-				exit(0);
-				break;
+			case SDLK_ESCAPE: exit(0); break;
 			default: break;
 			}
 
@@ -86,7 +128,7 @@ int main() {
 
 void print_event_type(Uint32 event) {
 	switch (event) {
-		case 0: printf("SDL_FIRSTEVENT\n"); 					break;
+		case 0:     printf("SDL_FIRSTEVENT\n"); 				break;
 		case 0x100: printf("SDL_QUIT\n"); 						break;
 		case 0x101: printf("SDL_APP_TERMINATING\n"); 			break;
 		case 0x102: printf("SDL_APP_LOWMEMORY\n"); 				break;

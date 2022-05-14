@@ -30,9 +30,12 @@ class Game
 	class InvalidWordException : public std::exception { virtual const char* what(); };
 
 	public:
-		Game();																		//	Creates a new game object, not yet running with a word length of 5 and 5 maximum guesses.
+		static const size_t	default_word_length = 5;
+		static const size_t	default_max_guesses = 5;
+
+		Game();																		//	Creates a new game object, not yet running with default word length and default maximum guesses.
 		Game(int word_length, int max_guesses);										//	Creates a new game object, not yet running.
-		Game(const std::string& dictionarypath)										//	Creates a new game object with a word length of 5 and 5 maximum guesses from a given dictionary file, then starts it.
+		Game(const std::string& dictionarypath)										//	Creates a new game object with default word length and default maximum guesses from a given dictionary file, then starts it.
 			throw (FileImportFailedException);
 		Game(int word_length, int max_guesses, const std::string& dictionarypath)	//	Creates a new game object from a given dictionary file, then starts it.
 			throw (FileImportFailedException);
@@ -66,11 +69,10 @@ class Game
 		static std::string					get_random_word_from_dictionary(const std::unordered_set<std::string>& dictionary);
 
 	private:
-		const int							_word_length;
-		const int							_max_guesses;
-		bool								_running;
-		bool								_won;
+		const size_t						_word_length;
+		const size_t						_max_guesses;
 		int									_turn;
+		bool								_won;
 		std::random_device					_rand;
 		std::string							_goal;
 		std::vector<Guess>					_guesses;

@@ -19,18 +19,20 @@
 class Guess
 {
 	public:
-		Guess(const std::string& word, const std::string& goal);
+		Guess(const std::string& word, const std::string& goal)
 			throw (std::length_error);
 
 		const std::string&	get_word() const;	//	Return the guessed word.
 
-		bool	is_valid(int pos);		//	Returns true if the letter at pos position in word is the same than the letter in goal at the same position.
-		bool	is_misplaced(int pos);	//	Returns true if the letter at pos position in word can be found somewhere in goal (and if the same letter in goal has not already been flagged).
+		bool	is_valid(size_t pos) const			//	Returns true if the letter at pos position in word is the same than the letter in goal at the same position.
+					throw (std::range_error);
+		bool	is_misplaced(size_t pos) const		//	Returns true if the letter at pos position in word can be found somewhere in goal (and if the same letter in goal has not already been flagged).
+					throw (std::range_error);
 
 	private:
 		const std::string						_word;
 		const std::string&						_goal;
-		std::vector<bool>						_flagged;
+		std::vector<bool>						_misplaced;
 
 		Guess();
 		Guess(const Guess& instance);

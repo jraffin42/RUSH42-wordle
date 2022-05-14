@@ -32,8 +32,8 @@ $(SDL2_CONFIG): $(SDL2)
 	@printf "Configuring SDL2...\n"
 	@mkdir -p $(SDL2)/build && \
 	     cd $(SDL2)/build && \
-	     ../configure --prefix=$(DIR)/local >/dev/null
+	     ../configure --prefix=$(DIR)/local --disable-shared #>/dev/null
 	@printf "Building SDL2...\n"
-	@cd $(SDL2)/build && make -j >/dev/null
+	@cd $(SDL2)/build && make -j4
 	@printf "Installing SDL2 locally...\n"
 	@cd $(SDL2)/build && make install >/dev/null

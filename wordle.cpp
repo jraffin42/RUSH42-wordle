@@ -34,6 +34,8 @@ static int board_width;
 static int board_height;
 static int xmargin = 10;
 static int ymargin = 10;
+static int cursory = 0;
+static int cursorx = 0;
 
 static void cleanup() {
 	if (font != NULL)
@@ -98,14 +100,13 @@ static void render() {
 			}
 			if (ret < 0) sdlfail();
 			SDL_RenderFillRect(renderer, &dst);
-			if (tile_char[y][x] >= 'A' && tile_char[y][x] <= 'Z') {
-				;
-			} else {
-				SDL_Texture *tex = letter_textures[0];
+			if (tile_char[y][x] >= 'a' && tile_char[y][x] <= 'z') {
+				int idx = tile_char[y][x] - 'a';
+				SDL_Texture *tex = letter_textures[idx];
 				if (SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h) < 0) sdlfail();
 				dst.x += (tile[y][x].w - dst.w) / 2;
 				dst.y += (tile[y][x].h - dst.h) / 2;
-				SDL_RenderCopy(renderer, letter_textures[0], NULL, &dst);
+				SDL_RenderCopy(renderer, tex, NULL, &dst);
 			}
 		}
 	}
@@ -178,9 +179,28 @@ int main() {
 			break;
 		
 		case SDL_KEYDOWN:
+			char c;
 			switch (event.key.keysym.sym) {
 			case SDLK_ESCAPE: exit(0); break;
-			default: break;
+			case SDLK_BACKSPACE:
+				if (cursorx > 0) {
+					tile_char[cursory][--cursorx] = '\0';
+					render();
+				}
+				break;
+			default:
+				if ((int)event.key.keysym.sym >= (int)SDLK_a &&
+					(int)event.key.keysym.sym <= (int)SDLK_z) {
+					c = (int)event.key.keysym.sym - (int)SDLK_a + 'a';
+					if (cursorx < GRID_WIDTH)
+						tile_char[cursory][cursorx++] = c;
+					if (cursorx == GRID_WIDTH && cursory < GRID_HEIGHT - 1) {
+						cursory++;
+						cursorx = 0;
+					}
+					render();
+				}
+				break;
 			}
 
 		default: print_event_type(event.type);

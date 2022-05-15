@@ -1,6 +1,6 @@
 CC =       clang++
 CXX =      clang++
-CXXFLAGS = -Wall -Wextra $(shell $(SDL2_CONFIG) --cflags)
+CXXFLAGS += -Wall -Wextra $(shell $(SDL2_CONFIG) --cflags)
 LDLIBS =   $(shell $(SDL2_CONFIG) --static-libs) -lSDL2_ttf
 
 NAME = wordle
@@ -25,7 +25,9 @@ fclean: clean
 	rm -rf $(SDL2_TTF)
 re: fclean all
 reme: clean all
-.PHONY: all clean fclean SDL2
+debug: CXXFLAGS += -g
+debug: clean all
+.PHONY: all clean fclean SDL2 debug
 
 $(SDL2_CONFIG):
 	@printf "Downloading SDL2...\n"

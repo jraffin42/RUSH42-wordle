@@ -16,6 +16,7 @@
 #include <unordered_set>
 #include <vector>
 #include <string>
+#include <locale>
 
 #include "Guess.hpp"
 
@@ -60,6 +61,7 @@ class Game
 		size_t				word_length();	//	Get the game word length.
 		size_t				max_guesses();	//	Maximum Guesses before loosing the game.
 
+		bool				is_word_alpha(const std::string& word);
 		bool				is_word_valid(const std::string& word);		//	Is this word part of the dictionary ?
 		const Guess&		guess_word(const std::string& word)			//	Takes a turn guessing a word.
 								throw (InvalidWordException, GameNotRunningException, std::length_error);
@@ -82,6 +84,8 @@ class Game
 		std::vector<const std::string*>			_randomPickVector;
 		std::random_device 						_randomDevice;
 		std::mt19937_64							_randomGenerator;
+
+		static const std::locale				_loc;
 
 		bool	_isalpha_and_uppercase_transform(std::string& str);
 		void	_add_word_to_dictionary_internal(const std::string& word);

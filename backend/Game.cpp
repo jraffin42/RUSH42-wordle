@@ -6,7 +6,7 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 17:07:56 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/15 12:40:54 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/15 13:48:57 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +132,11 @@ size_t				Game::max_guesses()
 	return _max_guesses;
 }
 
+bool				Game::is_word_alpha(const std::string& word)
+{
+	return std::all_of(word.begin(), word.end(), [] (char c) { return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z'); });
+}
+
 bool				Game::is_word_valid(const std::string& word)
 {
 	if (word.size() != _word_length)
@@ -187,12 +192,13 @@ bool				Game::_isalpha_and_uppercase_transform(std::string& str)
 {
 	const struct UppercaseUnaryOperation
 	{
-		const std::locale loc;
 		char	operator()(char c)
 		{
-			if (!std::isalpha<char>(c, loc))
-				throw InvalidWordException();
-			return std::toupper<char>(c, loc);
+			if ('A' <= c && c <= 'Z')
+				return c;
+			if ('a' <= c && c <= 'z')
+				return c - 32;
+			throw InvalidWordException();
 		}
 	} toUpperOp;
 

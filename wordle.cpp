@@ -160,11 +160,13 @@ static void update_dimensions() {
 	SDL_GetWindowSize(window, &width, &height);
 	board_width = width - xmargin * 2;
 	board_height = height - ymargin * 2;
+	board_width = (board_width > board_height ? board_height : board_width);
+	int left_margin = (width - board_width) / 2;
 	tile_width = board_width / GRID_WIDTH * 9 / 10;
 	tile_height = (height - ymargin * 2) / GRID_HEIGHT * 9 / 10;
 	for (int y = 0; y < GRID_HEIGHT; y++) {
 		for (int x = 0; x < GRID_WIDTH; x++) {
-			tile[y][x].x = xmargin + (board_width * (x * 2 + 1) / GRID_WIDTH - tile_width) / 2;
+			tile[y][x].x = left_margin + (board_width * (x * 2 + 1) / GRID_WIDTH - tile_width) / 2;
 			tile[y][x].y = ymargin + (board_height * (y * 2 + 1) / GRID_HEIGHT - tile_height) / 2;
 			tile[y][x].w = tile_width;
 			tile[y][x].h = tile_height;

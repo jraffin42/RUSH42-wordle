@@ -64,10 +64,8 @@ static void cleanup() {
 	// We assume the last allocated letter is only followed by unallocated ones
 	for (int i = 0; i < 26 && letter_surfaces[i] != NULL; i++)
 		SDL_FreeSurface(letter_surfaces[i]);
-	for (int i = 0; i < 26 && letter_textures[i] != NULL; i++)
-		SDL_DestroyTexture(letter_textures[i]);
-	if (popup_surface != NULL) SDL_FreeSurface(popup_surface);
-	if (popup_texture != NULL) SDL_DestroyTexture(popup_texture);
+	if (popup_surface != NULL) SDL_FreeSurface   (popup_surface);
+	if (invalid_word_surface != NULL) SDL_FreeSurface   (invalid_word_surface);
 }
 
 #define fail(msg) fail_(__FILE__, __LINE__, msg)
@@ -132,7 +130,7 @@ static void render() {
 			if (game.is_won()) {
 				snprintf(str,
 				         256,
-				         " You won! The words was %s. ",
+				         " You won! The word was %s. ",
 				         game.get_goal().c_str());
 			} else {
 				snprintf(str,
@@ -193,7 +191,7 @@ int main() {
 	try {
 		game.import_dictionary_file("words.txt");
 	} catch (Game::FileImportFailedException& e) {
-		fail("Failed to open dicionary file words.txt");
+		fail("Failed to open dictionary file words.txt");
 	}
 	if (!game.dictionary_size()) {
 		fail("Word dictionary is empty");
@@ -211,7 +209,7 @@ int main() {
 			SDL_WINDOWPOS_UNDEFINED,
 			DEFAULT_WINDOW_WIDTH,
 			DEFAULT_WINDOW_HEIGHT,
-			SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL); if (window == NULL) sdlfail();
+			SDL_WINDOW_RESIZABLE); if (window == NULL) sdlfail();
 	renderer = SDL_CreateRenderer(window, -1, 0); if (renderer == NULL) sdlfail();
 
 	font =       TTF_OpenFont(FONT_PATH, 72); if (font == NULL) ttffail();

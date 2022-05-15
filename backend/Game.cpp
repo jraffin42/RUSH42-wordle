@@ -6,7 +6,7 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 17:07:56 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/15 10:45:57 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/15 11:05:56 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,11 @@ void				Game::import_dictionary_file(const std::string& filepath) throw (GameRun
 	{
 		throw FileImportFailedException();
 	}
+}
+
+size_t				Game::dictionary_size()
+{
+	return _dictionary.size();
 }
 
 void				Game::stop_game()

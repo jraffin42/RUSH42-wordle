@@ -46,6 +46,8 @@ class Game
 		void				import_dictionary_file(const std::string& filepath)		//	Imports a whitespace separated word list file into the dictionary.
 								throw (GameRunningException, FileImportFailedException);
 
+		size_t				dictionary_size();
+
 		void				stop_game();	//	Clears game state.
 		void				start_game()	//	Clears game state and starts a new game.
 								throw (EmptyDictionaryException);

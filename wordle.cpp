@@ -198,7 +198,6 @@ int main() {
 	}
 
 	game.start_game();
-	printf("Answer: %s\n", game.get_goal().c_str());
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) { sdlfail(); } safeatexit(SDL_Quit);
 	if (TTF_Init() < 0)               { ttffail(); } safeatexit(TTF_Quit);

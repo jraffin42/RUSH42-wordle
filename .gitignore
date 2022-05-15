@@ -2,9 +2,6 @@ wordle
 *.o
 *.swp
 *~
-local/
 .vscode/
-*/build/
-SDL2-*/
-SDL2_ttf-*/
 backend/a.out
+obj/

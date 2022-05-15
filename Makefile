@@ -1,54 +1,25 @@
-CC =       clang++
-CXX =      clang++
-CXXFLAGS += -Wall -Wextra $(shell $(SDL2_CONFIG) --cflags)
-LDLIBS =   $(shell $(SDL2_CONFIG) --static-libs) -lSDL2_ttf
+CXX = clang++
+CXXFLAGS += -Wall -Wextra -Werror
+
+INC = backend
+SRC = .
+OBJDIR = obj
 
 NAME = wordle
-SRC =  wordle.cpp backend/Game.cpp backend/Guess.cpp
-OBJ =  $(SRC:.cpp=.o)
+SRCS =  console_wordle.cpp backend/Game.cpp backend/Guess.cpp
+OBJ =  $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
 
-DIR := $(shell pwd)
-SDL2 =        SDL2-2.0.22
-SDL2_TTF =    SDL2_ttf-2.0.18
-SDL2_CONFIG = local/bin/sdl2-config
-SDL2_TTF_A =  local/lib/libSDL2_ttf.la
+$(OBJDIR)/%.o	:	$(SRC)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $(addprefix -I ,$(INC)) -o $@ $<
 
 all: $(NAME)
 $(NAME): $(OBJ)
-$(OBJ): $(SDL2_CONFIG) $(SDL2_TTF_A)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
+
 clean:
-	rm -vf $(OBJ)
+	rm -rf $(OBJDIR)
 fclean: clean
-	@rm -vf $(NAME)
-	rm -rf local
-	rm -rf $(SDL2)
-	rm -rf $(SDL2_TTF)
+	rm $(NAME)
 re: fclean all
-reme: clean all
-debug: CXXFLAGS += -g
-debug: clean all
-.PHONY: all clean fclean SDL2 debug
-
-$(SDL2_CONFIG):
-	@printf "Downloading SDL2...\n"
-	@curl -fsSL https://libsdl.org/release/SDL2-2.0.22.tar.gz | tar -xz
-	@printf "Configuring SDL2...\n"
-	@mkdir -p $(SDL2)/build && \
-	     cd $(SDL2)/build && \
-	     ../configure --prefix=$(DIR)/local --disable-shared --disable-dependency-tracking #>/dev/null
-	@printf "Building SDL2...\n"
-	@cd $(SDL2)/build && make -j4
-	@printf "Installing SDL2 locally...\n"
-	@cd $(SDL2)/build && make install >/dev/null
-
-$(SDL2_TTF_A):
-	@printf "Downloading SDL2_ttf...\n"
-	@curl -fsSL https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.0.18/SDL2_ttf-2.0.18.tar.gz | tar -xz
-	@printf "Configuring SDL2_ttf...\n"
-	@mkdir -p $(SDL2_TTF)/build && \
-	     cd $(SDL2_TTF)/build && \
-	     ../configure --prefix=$(DIR)/local --disable-shared --disable-dependency-tracking #>/dev/null
-	@printf "Building SDL2_ttf...\n"
-	@cd $(SDL2_TTF)/build && make -j4
-	@printf "Installing SDL2_ttf locally...\n"
-	@cd $(SDL2_TTF)/build && make install >/dev/null
+.PHONY: all clean fclean

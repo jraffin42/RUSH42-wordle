@@ -6,7 +6,7 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 16:09:47 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/15 14:55:16 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/15 15:06:45 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ int main()
 
 	try
 	{
-		game.import_dictionary_file("../words.txt");
+		game.import_dictionary_file("words.txt");
 	}
 	catch (Game::FileImportFailedException& e)
 	{

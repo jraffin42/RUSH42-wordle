@@ -20,6 +20,8 @@ static TTF_Font *font = NULL;
 static TTF_Font *font_small = NULL;
 static SDL_Surface *letter_surfaces[26] = {};
 static SDL_Texture *letter_textures[26] = {};
+static SDL_Surface *invalid_word_surface = NULL;
+static SDL_Texture *invalid_word_texture = NULL;
 static SDL_Surface *popup_surface = NULL;
 static SDL_Texture *popup_texture = NULL;
 static SDL_Rect tile[GRID_HEIGHT][GRID_WIDTH + 1] = {};
@@ -40,6 +42,7 @@ static int xmargin = 10;
 static int ymargin = 10;
 static int cursory = 0;
 static int cursorx = 0;
+static bool invalid = false;
 
 static void cleanup() {
 	if (font != NULL)       TTF_CloseFont(font);
@@ -117,12 +120,12 @@ static void render() {
 			if (game.is_won()) {
 				snprintf(str,
 				         256,
-				         "You won! The words was %s.",
+				         " You won! The words was %s. ",
 				         game.get_goal().c_str());
 			} else {
 				snprintf(str,
 				         256,
-				         "You lost :( The word was %s.",
+				         " You lost :( The word was %s. ",
 				         game.get_goal().c_str());
 			}
 			popup_surface = TTF_RenderText_Shaded(
@@ -140,6 +143,15 @@ static void render() {
 		dst.x = (width - dst.w) / 2;
 		dst.y = (height - dst.h) / 2;
 		SDL_RenderCopy(renderer, popup_texture, NULL, &dst);
+	} else if (invalid) {
+		if (SDL_QueryTexture(invalid_word_texture,
+		                     NULL,
+		                     NULL,
+		                     &dst.w,
+		                     &dst.h) < 0) sdlfail();
+		dst.x = (width - dst.w) / 2;
+		dst.y = 0;
+		SDL_RenderCopy(renderer, invalid_word_texture, NULL, &dst);
 	}
 	SDL_RenderPresent(renderer);
 }
@@ -190,11 +202,12 @@ int main() {
 
 	font =       TTF_OpenFont(FONT_PATH, 72); if (font == NULL) ttffail();
 	font_small = TTF_OpenFont(FONT_PATH, 42); if (font == NULL) ttffail();
+
 	char str[2];
 	str[1] = '\0';
 	for (int i = 0; i < 26; i++) {
 		str[0] = 'A' + i;
-		letter_surfaces[i] = TTF_RenderText_Solid(
+		letter_surfaces[i] = TTF_RenderText_Blended(
 				font,
 				str,
 		        (SDL_Color){0xff, 0xff, 0xff, 0xff}
@@ -204,6 +217,17 @@ int main() {
 				letter_surfaces[i]
 			); if (letter_textures[i] == NULL) sdlfail();
 	}
+
+	invalid_word_surface = TTF_RenderText_Shaded(
+			font_small,
+			" Not in word list ",
+			(SDL_Color){0x00, 0x00, 0x00, 0xff},
+			(SDL_Color){0xff, 0xff, 0xff, 0xff}
+		); if (invalid_word_surface == NULL) ttffail();
+	invalid_word_texture = SDL_CreateTextureFromSurface(
+			renderer,
+			invalid_word_surface
+		); if (invalid_word_texture == NULL) sdlfail();
 
 	SDL_SetWindowMinimumSize(window, 640, 480);
 	update_dimensions();
@@ -228,23 +252,28 @@ int main() {
 				if (cursorx > 0 && cursory < GRID_HEIGHT) {
 					cursorx--;
 					tile_char[cursory][cursorx] = '\0';
+					invalid = false;
 					render();
 				}
 				break;
 			case SDLK_RETURN: {
 				std::string str(&tile_char[cursory][0]);
-				if (cursory < GRID_HEIGHT && game.is_word_valid(str)) {
-					const Guess &guess = game.guess_word(str);
-					for (int i = 0; str[i] != '\0'; i++) {
-						if (guess.is_valid(i))
-							tile_color[cursory][i] = GREEN;
-						else if (guess.is_misplaced(i))
-							tile_color[cursory][i] = YELLOW;
-						else
-							tile_color[cursory][i] = GRAY;
+				if (!game.is_finished()) {
+					if (game.is_word_valid(str)) {
+						const Guess &guess = game.guess_word(str);
+						for (int i = 0; str[i] != '\0'; i++) {
+							if (guess.is_valid(i))
+								tile_color[cursory][i] = GREEN;
+							else if (guess.is_misplaced(i))
+								tile_color[cursory][i] = YELLOW;
+							else
+								tile_color[cursory][i] = GRAY;
+						}
+						cursorx = 0;
+						cursory += 1;
+					} else {
+						invalid = true;
 					}
-					cursorx = 0;
-					cursory += 1;
 					render();
 				}
 			} break;
@@ -257,8 +286,8 @@ int main() {
 							!game.is_finished()) {
 						tile_char[cursory][cursorx] = c;
 						cursorx++;
+						render();
 					}
-					render();
 				}
 				break;
 			}

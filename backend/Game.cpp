@@ -6,7 +6,7 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 17:07:56 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/15 11:05:56 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/15 12:38:17 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,8 @@ size_t				Game::max_guesses()
 
 bool				Game::is_word_valid(const std::string& word)
 {
+	if (word.size() != _word_length)
+		return false;
 	std::string	cpy(word);
 	if (!_isalpha_and_uppercase_transform(cpy))
 		return false;
@@ -145,9 +147,17 @@ const Guess&		Game::guess_word(const std::string& word) throw (InvalidWordExcept
 {
 	if (!is_running())
 		throw GameNotRunningException();
-	if (!is_word_valid(word))
+	if (word.size() != _word_length)
 		throw InvalidWordException();
-	_guesses.push_back(Guess(word, _goal));
+	std::string	cpy(word);
+	if (!_isalpha_and_uppercase_transform(cpy))
+		throw InvalidWordException();
+	auto it = _dictionary.find(cpy);
+	if (it == _dictionary.end())
+		throw InvalidWordException();
+	_guesses.push_back(Guess(cpy, _goal));
+	if (cpy == _goal)
+		_won = true;
 	return _guesses.back();
 }
 

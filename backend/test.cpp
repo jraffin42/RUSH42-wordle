@@ -6,7 +6,7 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 16:09:47 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/14 21:29:50 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/15 10:40:43 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,8 @@
 
 int main()
 {
+	Game	game;
 
-
-
-/*	Game	game;
-
-	game.add_word_to_dictionary("oooaa");
-	game.add_word_to_dictionary("oaaoa");
 	try
 	{
 		game.import_dictionary_file("../words.txt");
@@ -31,24 +26,26 @@ int main()
 	catch (Game::FileImportFailedException& e)
 	{
 		std::cout << e.what() << std::endl;
+		return 1;
 	}
-	game.start_game();
-	const Guess&	guess = game.guess_word("oaaoa");*/
 
-	Guess	guess("oaaoa", "oooaa");
+	game.start_game();
 
 	for (int t=0; t<5; ++t)
 	{
+		const Guess&	guess = game.guess_word(game.get_random_word());
+		std::cout << "guess : " << guess.get_word() << std::endl;
+		std::cout << "       [";
 		for (int i=0;i< 5;++i)
 		{
 			if (guess.is_valid(i))
-				std::cout << " [  VALID  ] ";
+				std::cout << "V";
 			else if (guess.is_misplaced(i))
-				std::cout << " [MISPLACED] ";
+				std::cout << "m";
 			else
-				std::cout << " [ ABSENT  ] ";
+				std::cout << ".";
 		}
-		std::cout << std::endl;
+		std::cout << "]" << std::endl;
 	}
 
 	return 0;

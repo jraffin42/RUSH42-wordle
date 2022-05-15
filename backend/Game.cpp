@@ -6,15 +6,17 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 17:07:56 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/14 21:25:55 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/15 10:37:06 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <fstream>
 #include <stdexcept>
+#include <algorithm>
 #include <random>
 #include <unordered_set>
 #include <string>
+#include <locale>
 
 #include "Game.hpp"
 
@@ -29,10 +31,18 @@ Game::Game() : Game(default_word_length, default_word_length) {}
 Game::Game(size_t word_length, size_t max_guesses)
 	: _word_length(word_length)
 	, _max_guesses(max_guesses)
-	, _randdev()
-	, _randgen(_randdev())
+	, _started(false)
+	, _won(false)
+	, _goal("")
+	, _guesses()
+	, _dictionary()
+	, _randomPickVector()
+	, _randomDevice()
+	, _randomGenerator(_randomDevice())
 {
 	_guesses.reserve(_max_guesses);
+	_dictionary.reserve(1024);
+	_randomPickVector.reserve(1024);
 }
 
 Game::~Game() {}
@@ -42,7 +52,7 @@ void				Game::clear_dictionary() throw (GameRunningException)
 	if (is_running())
 		throw GameRunningException();
 	_dictionary.clear();
-	_randVector.clear();
+	_randomPickVector.clear();
 }
 
 void				Game::add_word_to_dictionary(const std::string& word) throw (GameRunningException, std::length_error)
@@ -51,8 +61,12 @@ void				Game::add_word_to_dictionary(const std::string& word) throw (GameRunning
 		throw GameRunningException();
 	if (word.size() != _word_length)
 		throw std::length_error("Game::add_word_to_dictionary(const std::string& word) word must be the size of the predefined world_length().");
-	_add_word_to_dictionary_internal(word);
+	std::string uppercaseCopy(word);
+	if (_isalpha_and_uppercase_transform(uppercaseCopy))
+		_add_word_to_dictionary_internal(uppercaseCopy);
 }
+
+#include <iostream>
 
 void				Game::import_dictionary_file(const std::string& filepath) throw (GameRunningException, FileImportFailedException)
 {
@@ -60,16 +74,15 @@ void				Game::import_dictionary_file(const std::string& filepath) throw (GameRun
 		throw GameRunningException();
 	std::string word;
 	std::ifstream file(filepath.c_str());
-	while (file.good())
+	while (file >> word)
 	{
-		file >> word;
-		if (file.fail())
-			throw FileImportFailedException();
-		if (word.size() == _word_length)
+		if (word.size() == _word_length && _isalpha_and_uppercase_transform(word))
 			_add_word_to_dictionary_internal(word);
 	}
-	if (file.fail())
-		throw FileImportFailedException();
+	if (!file.eof())
+	{
+		std::cout << word;	throw FileImportFailedException();
+	}
 }
 
 void				Game::stop_game()
@@ -118,7 +131,10 @@ size_t				Game::max_guesses()
 
 bool				Game::is_word_valid(const std::string& word)
 {
-	auto it = _dictionary.find(word);
+	std::string	cpy(word);
+	if (!_isalpha_and_uppercase_transform(cpy))
+		return false;
+	auto it = _dictionary.find(cpy);
 	return (it != _dictionary.end());
 }
 
@@ -146,18 +162,37 @@ const Guess&		Game::get_guess(size_t pos) throw (std::range_error)
 
 std::string			Game::get_random_word() throw (EmptyDictionaryException)
 {
-	if (!_randVector.size())
+	if (!_randomPickVector.size())
 		throw EmptyDictionaryException();
 
-	std::uniform_int_distribution<size_t>	boundary(0, _randVector.size()-1);
+	std::uniform_int_distribution<size_t>	boundary(0, _randomPickVector.size()-1);
 
-	return *_randVector[boundary(_randgen)];
+	return *_randomPickVector[boundary(_randomGenerator)];
 }
 
+bool				Game::_isalpha_and_uppercase_transform(std::string& str)
+{
+	const struct UppercaseUnaryOperation
+	{
+		const std::locale loc;
+		char	operator()(char c)
+		{
+			if (!std::isalpha<char>(c, loc))
+				throw InvalidWordException();
+			return std::toupper<char>(c, loc);
+		}
+	} toUpperOp;
+
+	try
+	{ std::transform(str.begin(), str.end(), str.begin(), toUpperOp); }
+	catch (InvalidWordException e)
+	{ return false; }
+	return true;
+}
 
 void				Game::_add_word_to_dictionary_internal(const std::string& word)
 {
 	auto pair = _dictionary.insert(word);
 	if (pair.second)
-		_randVector.push_back(&*pair.first);
+		_randomPickVector.push_back(&*pair.first);
 }

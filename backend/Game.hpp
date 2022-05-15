@@ -77,11 +77,11 @@ class Game
 		std::string								_goal;
 		std::vector<Guess>						_guesses;
 		std::unordered_set<std::string>			_dictionary;
-		std::vector<const std::string*>			_randVector;
-		std::random_device 						_randdev;
-		std::mt19937_64							_randgen;
-		std::uniform_int_distribution<size_t>	_rand;
+		std::vector<const std::string*>			_randomPickVector;
+		std::random_device 						_randomDevice;
+		std::mt19937_64							_randomGenerator;
 
+		bool	_isalpha_and_uppercase_transform(std::string& str);
 		void	_add_word_to_dictionary_internal(const std::string& word);
 
 		Game(const Game& instance);

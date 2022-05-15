@@ -9,23 +9,23 @@
 #define DEFAULT_WINDOW_WIDTH 640
 #define DEFAULT_WINDOW_HEIGHT 480
 
+
 void print_event_type(Uint32 event);
 
+static SDL_Window *window = NULL;
+static SDL_Renderer *renderer = NULL;
+static TTF_Font *font = NULL;
+static TTF_Font *font_small = NULL;
+static SDL_Surface *letter_surfaces[26] = {};
+static SDL_Texture *letter_textures[26] = {};
+static SDL_Rect tile[GRID_HEIGHT][GRID_WIDTH] = {};
+static char tile_char[GRID_HEIGHT][GRID_WIDTH] = {};
 enum e_tile_color {
 	BLACK = 0,
 	GRAY,
 	YELLOW,
 	GREEN,
-};
-
-static SDL_Window *window = NULL;
-static SDL_Renderer *renderer = NULL;
-static TTF_Font *font = NULL;
-static SDL_Surface *letter_surfaces[26] = {};
-static SDL_Texture *letter_textures[26] = {};
-static SDL_Rect tile[GRID_HEIGHT][GRID_WIDTH] = {};
-static char tile_char[GRID_HEIGHT][GRID_WIDTH] = {};
-static e_tile_color tile_color[GRID_HEIGHT][GRID_WIDTH] = {};
+} static tile_color[GRID_HEIGHT][GRID_WIDTH] = {};
 static int width = DEFAULT_WINDOW_WIDTH;
 static int height = DEFAULT_WINDOW_HEIGHT;
 static int tile_width;
@@ -36,6 +36,7 @@ static int xmargin = 10;
 static int ymargin = 10;
 static int cursory = 0;
 static int cursorx = 0;
+static bool win_condition = false;
 
 static void cleanup() {
 	if (font != NULL)
@@ -47,10 +48,6 @@ static void cleanup() {
 		SDL_FreeSurface(letter_surfaces[i]);
 	for (int i = 0; i < 26 && letter_textures[i] != NULL; i++)
 		SDL_DestroyTexture(letter_textures[i]);
-}
-
-static void quit(int status) {
-	exit (status);
 }
 
 #define sdlfail() sdlfail_(__FILE__, __LINE__)
@@ -121,7 +118,6 @@ static void update_dimensions() {
 	tile_height = (height - ymargin * 2) / GRID_HEIGHT * 9 / 10;
 	for (int y = 0; y < GRID_HEIGHT; y++) {
 		for (int x = 0; x < GRID_WIDTH; x++) {
-			tile_color[y][x] = (e_tile_color)(x % 4); // TODO: Remove this test initialization
 			tile[y][x].x = xmargin + (board_width * (x * 2 + 1) / GRID_WIDTH - tile_width) / 2;
 			tile[y][x].y = ymargin + (board_height * (y * 2 + 1) / GRID_HEIGHT - tile_height) / 2;
 			tile[y][x].w = tile_width;
@@ -134,32 +130,30 @@ int main() {
 	SDL_Event event;
 	int ret;
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) sdlfail();
-	safeatexit(SDL_Quit);
-	if (TTF_Init() < 0) ttffail();
-	safeatexit(TTF_Quit);
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) { sdlfail(); } safeatexit(SDL_Quit);
+	if (TTF_Init() < 0)               { ttffail(); } safeatexit(TTF_Quit);
+	                                                 safeatexit(cleanup);
 
-	safeatexit(cleanup);
 	window = SDL_CreateWindow("Wordle",
-		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		640, 480,
-		SDL_WINDOW_RESIZABLE|SDL_WINDOW_OPENGL);
-	if (window == NULL) sdlfail();
-	renderer = SDL_CreateRenderer(window, -1, 0);
-	if (renderer == NULL) sdlfail();
+			SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED,
+			640,
+			480,
+			SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL); if (window == NULL) sdlfail();
+	renderer = SDL_CreateRenderer(window, -1, 0); if (renderer == NULL) sdlfail();
 
-	font = TTF_OpenFont(FONT_PATH, 72); if (font == NULL) ttffail();
+	font =       TTF_OpenFont(FONT_PATH, 72); if (font == NULL) ttffail();
+	font_small = TTF_OpenFont(FONT_PATH, 42); if (font == NULL) ttffail();
 	char str[2];
 	str[1] = '\0';
 	for (int i = 0; i < 26; i++) {
 		str[0] = 'A' + i;
 		letter_surfaces[i] = TTF_RenderText_Solid(
-				font, str,
-		        (SDL_Color){0xff, 0xff, 0xff, 0xff});
-		if (letter_surfaces[i] == NULL) ttffail();
+				font,
+				str,
+		        (SDL_Color){0xff, 0xff, 0xff, 0xff}); if (letter_surfaces[i] == NULL) ttffail();
 		letter_textures[i] = SDL_CreateTextureFromSurface(
-				renderer, letter_surfaces[i]);
-		if (letter_textures[i] == NULL) sdlfail();
+				renderer, letter_surfaces[i]); if (letter_textures[i] == NULL) sdlfail();
 	}
 
 	SDL_SetWindowMinimumSize(window, 640, 480);
@@ -188,6 +182,8 @@ int main() {
 					render();
 				}
 				break;
+			case SDLK_RETURN:
+				break;
 			default:
 				if ((int)event.key.keysym.sym >= (int)SDLK_a &&
 					(int)event.key.keysym.sym <= (int)SDLK_z) {
@@ -206,7 +202,7 @@ int main() {
 		default: print_event_type(event.type);
 		}
 	}
-	if (!ret) { fprintf(stderr, "wordle: %s\n", SDL_GetError()); quit(1); }
+	if (!ret) sdlfail();
 	exit(0);
 }
 

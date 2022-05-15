@@ -216,7 +216,7 @@ int main() {
 			switch (event.window.event) {
 			// Where we render things
 			case SDL_WINDOWEVENT_EXPOSED: render(); break;
-			case SDL_WINDOWEVENT_RESIZED: update_dimensions(); break;
+			case SDL_WINDOWEVENT_RESIZED: update_dimensions(); render(); break;
 			}
 			break;
 		

@@ -6,7 +6,7 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 16:09:47 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/15 12:18:40 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/15 12:43:51 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,8 @@ int main()
 		std::string	word;
 		while (true)
 		{
-			std::cout << "Guess " << game.guesses() << ": ";
+			std::cout << "Take a Guess (" << game.max_guesses() - game.guesses() << " left) : ";
 			std::getline(std::cin, word);
-			std::cout << "[" << word << "]" << std::endl;
 			if (game.is_word_valid(word))
 				break;
 			else

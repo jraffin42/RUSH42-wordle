@@ -228,7 +228,6 @@ int main() {
 				if (cursorx > 0 && cursory < GRID_HEIGHT) {
 					cursorx--;
 					tile_char[cursory][cursorx] = '\0';
-					tile_color[cursory][cursorx] = BLACK;
 					render();
 				}
 				break;
@@ -241,6 +240,8 @@ int main() {
 							tile_color[cursory][i] = GREEN;
 						else if (guess.is_misplaced(i))
 							tile_color[cursory][i] = YELLOW;
+						else
+							tile_color[cursory][i] = GRAY;
 					}
 					cursorx = 0;
 					cursory += 1;
@@ -255,7 +256,6 @@ int main() {
 							cursory < GRID_HEIGHT &&
 							!game.is_finished()) {
 						tile_char[cursory][cursorx] = c;
-						tile_color[cursory][cursorx] = GRAY;
 						cursorx++;
 					}
 					render();

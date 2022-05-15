@@ -6,7 +6,7 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 17:07:56 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/15 13:48:57 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/15 14:34:33 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void				Game::import_dictionary_file(const std::string& filepath) throw (GameRun
 	}
 }
 
-size_t				Game::dictionary_size()
+size_t				Game::dictionary_size() const
 {
 	return _dictionary.size();
 }
@@ -102,42 +102,42 @@ void				Game::start_game() throw (EmptyDictionaryException)
 	_won = false;
 }
 
-bool				Game::is_running()
+bool				Game::is_running() const
 {
 	return (_started && !is_finished());
 }
 
-bool				Game::is_finished()
+bool				Game::is_finished() const
 {
 	return (_won || _guesses.size() == _max_guesses);
 }
 
-bool				Game::is_won()
+bool				Game::is_won() const
 {
 	return _won;
 }
 
-size_t				Game::guesses()
+size_t				Game::guesses() const
 {
 	return _guesses.size();
 }
 
-size_t				Game::word_length()
+size_t				Game::word_length() const
 {
 	return _word_length;
 }
 
-size_t				Game::max_guesses()
+size_t				Game::max_guesses() const
 {
 	return _max_guesses;
 }
 
-bool				Game::is_word_alpha(const std::string& word)
+bool				Game::is_word_alpha(const std::string& word) const
 {
 	return std::all_of(word.begin(), word.end(), [] (char c) { return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z'); });
 }
 
-bool				Game::is_word_valid(const std::string& word)
+bool				Game::is_word_valid(const std::string& word) const
 {
 	if (word.size() != _word_length)
 		return false;
@@ -166,12 +166,12 @@ const Guess&		Game::guess_word(const std::string& word) throw (InvalidWordExcept
 	return _guesses.back();
 }
 
-const std::string&	Game::get_goal()
+const std::string&	Game::get_goal() const
 {
 	return _goal;
 }
 
-const Guess&		Game::get_guess(size_t pos) throw (std::range_error)
+const Guess&		Game::get_guess(size_t pos) const throw (std::range_error)
 {
 	if (pos >= _guesses.size())
 		throw std::range_error("Game::get_guess(size_t pos) pos is out of range.");
@@ -188,9 +188,9 @@ std::string			Game::get_random_word() throw (EmptyDictionaryException)
 	return *_randomPickVector[boundary(_randomGenerator)];
 }
 
-bool				Game::_isalpha_and_uppercase_transform(std::string& str)
+bool				Game::_isalpha_and_uppercase_transform(std::string& str) const
 {
-	const struct UppercaseUnaryOperation
+	static const struct UppercaseUnaryOperation
 	{
 		char	operator()(char c)
 		{

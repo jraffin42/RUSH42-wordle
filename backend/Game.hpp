@@ -47,27 +47,27 @@ class Game
 		void				import_dictionary_file(const std::string& filepath)		//	Imports a whitespace separated word list file into the dictionary.
 								throw (GameRunningException, FileImportFailedException);
 
-		size_t				dictionary_size();
+		size_t				dictionary_size() const;
 
 		void				stop_game();	//	Clears game state.
 		void				start_game()	//	Clears game state and starts a new game.
 								throw (EmptyDictionaryException);
 
-		bool				is_running();	//	Is the game running ?
-		bool				is_finished();	//	Is the game finished ?
-		bool				is_won();		//	Is the game won ?
-		size_t				guesses();		//	Number of valid guesses submitted so far.
+		bool				is_running() const;		//	Is the game running ?
+		bool				is_finished() const;	//	Is the game finished ?
+		bool				is_won() const;			//	Is the game won ?
+		size_t				guesses() const;		//	Number of valid guesses submitted so far.
 
-		size_t				word_length();	//	Get the game word length.
-		size_t				max_guesses();	//	Maximum Guesses before loosing the game.
+		size_t				word_length() const;	//	Get the game word length.
+		size_t				max_guesses() const;	//	Maximum Guesses before loosing the game.
 
-		bool				is_word_alpha(const std::string& word);
-		bool				is_word_valid(const std::string& word);		//	Is this word part of the dictionary ?
-		const Guess&		guess_word(const std::string& word)			//	Takes a turn guessing a word.
+		bool				is_word_alpha(const std::string& word) const;	//	Is this word formedd only from alphabetical characters ?
+		bool				is_word_valid(const std::string& word) const;	//	Is this word part of the dictionary ?
+		const Guess&		guess_word(const std::string& word)				//	Takes a turn guessing a word.
 								throw (InvalidWordException, GameNotRunningException, std::length_error);
 
-		const std::string&	get_goal();			//	Returns the word to find.
-		const Guess&		get_guess(size_t pos)	//	Returns a reference to the guess object at (zero based) pos position ( pos must be < guesses() ).
+		const std::string&	get_goal() const;			//	Returns the word to find.
+		const Guess&		get_guess(size_t pos) const	//	Returns a reference to the guess object at (zero based) pos position ( pos must be < guesses() ).
 								throw (std::range_error);
 
 		std::string			get_random_word()
@@ -85,10 +85,9 @@ class Game
 		std::random_device 						_randomDevice;
 		std::mt19937_64							_randomGenerator;
 
-		static const std::locale				_loc;
-
-		bool	_isalpha_and_uppercase_transform(std::string& str);
 		void	_add_word_to_dictionary_internal(const std::string& word);
+
+		bool	_isalpha_and_uppercase_transform(std::string& str) const;
 
 		Game(const Game& instance);
 		Game&	operator=(const Game& rhs);

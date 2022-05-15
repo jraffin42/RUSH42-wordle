@@ -32,7 +32,7 @@ class Game
 		class InvalidWordException : public std::exception { public: virtual const char* what() const throw(); };
 
 		static const size_t	default_word_length = 5;
-		static const size_t	default_max_guesses = 5;
+		static const size_t	default_max_guesses = 6;
 
 		Game();																		//	Creates a new Game object, not yet running with default word length and default maximum guesses.
 		Game(size_t word_length, size_t max_guesses);										//	Creates a new Game object, not yet running.

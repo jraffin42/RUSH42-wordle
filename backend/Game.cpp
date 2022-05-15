@@ -6,7 +6,7 @@
 /*   By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/14 17:07:56 by jraffin           #+#    #+#             */
-/*   Updated: 2022/05/15 10:37:06 by jraffin          ###   ########.fr       */
+/*   Updated: 2022/05/15 10:45:57 by jraffin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,6 @@ void				Game::add_word_to_dictionary(const std::string& word) throw (GameRunning
 		_add_word_to_dictionary_internal(uppercaseCopy);
 }
 
-#include <iostream>
-
 void				Game::import_dictionary_file(const std::string& filepath) throw (GameRunningException, FileImportFailedException)
 {
 	if (is_running())
@@ -81,7 +79,7 @@ void				Game::import_dictionary_file(const std::string& filepath) throw (GameRun
 	}
 	if (!file.eof())
 	{
-		std::cout << word;	throw FileImportFailedException();
+		throw FileImportFailedException();
 	}
 }
 
